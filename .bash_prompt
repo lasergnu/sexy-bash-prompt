@@ -83,7 +83,6 @@ sexy_bash_prompt_unpulled_symbol="▽"
 sexy_bash_prompt_dirty_unpulled_symbol="▼"
 sexy_bash_prompt_unpushed_unpulled_symbol="⬡"
 sexy_bash_prompt_dirty_unpushed_unpulled_symbol="⬢"
-sexy_bash_prompt_merge_conflicts_symbol="✖"
 
 # Apply symbol overrides that have been set in the environment
 # DEV: Working unicode symbols can be determined via the following gist
@@ -256,10 +255,15 @@ sexy_bash_prompt_get_git_info () {
   fi
 }
 
+sexy_bash_prompt_get_retval () {
+    local retval=$?
+    [ $retval -ne 0 ] && echo -e "\033[1;31m✖ ${retval}\033[00m" 
+}
+
 # Define the sexy-bash-prompt
-#PS1='\033[1;31m$(printf '%.*s' $? $?)\033[00m'\
-PS1="\[$sexy_bash_prompt_dir_color\]\w\[$sexy_bash_prompt_reset\]\
-\$( sexy_bash_prompt_is_on_git && \
+PS1="\$( sexy_bash_prompt_get_retval;\
+  echo -n \"\[$sexy_bash_prompt_dir_color\]\w\[$sexy_bash_prompt_reset\]\"
+  sexy_bash_prompt_is_on_git && \
   echo -n \"\[$sexy_bash_prompt_git_status_color\] \$(sexy_bash_prompt_get_git_info)\" && \
   echo -n \"\[$sexy_bash_prompt_git_progress_color\]\$(sexy_bash_prompt_get_git_progress)\" && \
   echo -n \"\[$sexy_bash_prompt_preposition_color\]\")\[$sexy_bash_prompt_reset\]\
