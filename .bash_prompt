@@ -161,6 +161,10 @@ sexy_bash_prompt_branch_exists () {
   git branch --remote 2> /dev/null | grep --quiet "$1"
 }
 
+sexy_bash_prompt_has_remote () {
+  [ $(git branch --remote 2> /dev/null | wc -l) -ne 0 ]
+}
+
 sexy_bash_prompt_parse_git_ahead () {
   # Grab the local and remote branch
   branch="$(sexy_bash_prompt_get_git_branch)"
@@ -175,6 +179,7 @@ sexy_bash_prompt_parse_git_ahead () {
 
   # If the remote branch is behind the local branch
   # or it has not been merged into origin (remote branch doesn't exist)
+  sexy_bash_prompt_has_remote || return
   if (sexy_bash_prompt_is_branch1_behind_branch2 "$remote_branch" "$branch" ||
       ! sexy_bash_prompt_branch_exists "$remote_branch"); then
     # echo our character
