@@ -244,32 +244,21 @@ function sexy_bash_prompt_get_git_status() {
 }
 
 sexy_bash_prompt_get_git_info () {
-  # Grab the branch
-  branch="$(sexy_bash_prompt_get_git_branch)"
-
-  # If there are any branches
-  if [[ "$branch" != "" ]]; then
-    # Echo the branch
-    output="$branch"
-
-    # Add on the git status
-    output="$output$(sexy_bash_prompt_get_git_status)"
-
-    # Echo our output
-    echo "$output"
-  fi
+  local branch="$(sexy_bash_prompt_get_git_branch)"
+  [ -n "$branch" ] && echo "$(sexy_bash_prompt_get_git_status)${branch}"
 }
 
 sexy_bash_prompt_get_retval () {
     local retval=$?
-    [ $retval -ne 0 ] && echo -e "\033[1;31m✖ ${retval}\033[00m" 
+    [ $retval -ne 0 ] && echo -e "\033[1;31m✖ ${retval}"
 }
 
 # Define the sexy-bash-prompt
 PS1="\$( sexy_bash_prompt_get_retval;\
-  echo -n \"\[$sexy_bash_prompt_dir_color\]\w\[$sexy_bash_prompt_reset\]\"
+  echo -n \"\[$sexy_bash_prompt_dir_color\]\w\"
   sexy_bash_prompt_is_on_git && \
-  echo -n \"\[$sexy_bash_prompt_git_status_color\] \$(sexy_bash_prompt_get_git_info)\" && \
-  echo -n \"\[$sexy_bash_prompt_git_progress_color\]\$(sexy_bash_prompt_get_git_progress)\" && \
-  echo -n \"\[$sexy_bash_prompt_preposition_color\]\")\[$sexy_bash_prompt_reset\]\
+  echo -n \"\[$sexy_bash_prompt_git_status_color\]\$(sexy_bash_prompt_get_git_info)\" && \
+  echo -n \"\[$sexy_bash_prompt_git_progress_color\]\$(sexy_bash_prompt_get_git_progress)\"\
+)\
+\[$sexy_bash_prompt_reset\]\
 \[$sexy_bash_prompt_symbol_color\]$sexy_bash_prompt_symbol \[$sexy_bash_prompt_reset\]"
