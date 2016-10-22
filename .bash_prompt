@@ -75,7 +75,7 @@ if [[ -n "$PROMPT_SYMBOL" ]]; then sexy_bash_prompt_symbol="$PROMPT_SYMBOL"; fi
 if [[ -n "$PROMPT_SYMBOL_COLOR" ]]; then sexy_bash_prompt_symbol_color="$PROMPT_SYMBOL_COLOR"; fi
 
 # Set up symbols
-sexy_bash_prompt_synced_symbol=""
+sexy_bash_prompt_synced_symbol=" "
 sexy_bash_prompt_dirty_synced_symbol="*"
 sexy_bash_prompt_unpushed_symbol="△"
 sexy_bash_prompt_dirty_unpushed_symbol="▲"
