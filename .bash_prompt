@@ -51,12 +51,6 @@ else
   sexy_bash_prompt_symbol_color="" # NORMAL
 fi
 
-# Define the default prompt terminator character '$'
-if [ "$UID" -eq 0 ]; then
-  sexy_bash_prompt_symbol="#"
-else
-  sexy_bash_prompt_symbol=">"
-fi
 
 # Set up symbols
 sexy_bash_prompt_synced_symbol=" "
@@ -67,6 +61,7 @@ sexy_bash_prompt_unpulled_symbol="▽"
 sexy_bash_prompt_dirty_unpulled_symbol="▼"
 sexy_bash_prompt_unpushed_unpulled_symbol="⬡"
 sexy_bash_prompt_dirty_unpushed_unpulled_symbol="⬢"
+sexy_bash_prompt_symbol=">"
 
 function sexy_bash_prompt_get_git_branch() {
   # On branches, this will return the branch name
@@ -99,7 +94,7 @@ sexy_bash_prompt_is_branch1_behind_branch2 () {
   [ -n "$first_log" ]
 }
 
-sexy_bash_prompt_no_branch_exists () {
+sexy_bash_prompt_branch_exists () {
   # List remote branches and exit with 0 or 1
   git branch --remote 2> /dev/null | grep --quiet "$1"
 }
@@ -116,7 +111,10 @@ sexy_bash_prompt_parse_git_ahead () {
   # If the remote branch is behind the local branch
   # or it has not been merged into origin (remote branch doesn't exist)
   sexy_bash_prompt_has_remote || return
-  { sexy_bash_prompt_is_branch1_behind_branch2 "$remote_branch" "$branch" || sexy_bash_prompt_no_branch_exists "$remote_branch" } && echo 1
+  if (sexy_bash_prompt_is_branch1_behind_branch2 "$remote_branch" "$branch" ||
+      ! sexy_bash_prompt_branch_exists "$remote_branch"); then
+    echo 1
+  fi
 }
 
 sexy_bash_prompt_parse_git_behind () {
