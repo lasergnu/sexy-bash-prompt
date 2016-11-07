@@ -17,23 +17,23 @@ if tput setaf 1 &> /dev/null; then
     # done
 
     # Save common color actions
-    sexy_bash_prompt_bold="$(tput bold)"
-    sexy_bash_prompt_reset="$(tput sgr0)"
+    sbp_bold="$(tput bold)"
+    sbp_reset="$(tput sgr0)"
 
     # If the terminal supports at least 256 colors, write out our 256 color based set
     if [[ "$(tput colors)" -ge 256 ]] &> /dev/null; then
-        sexy_bash_prompt_user_color="$sexy_bash_prompt_bold$(tput setaf 27)"        # BOLD BLUE
-        sexy_bash_prompt_dir_color="$sexy_bash_prompt_bold$(tput setaf 76)"         # BOLD GREEN
-        sexy_bash_prompt_git_status_color="$sexy_bash_prompt_bold$(tput setaf 154)" # BOLD YELLOW
-        sexy_bash_prompt_git_progress_color="$sexy_bash_prompt_bold$(tput setaf 9)" # BOLD RED
+        sbp_user_color="$sbp_bold$(tput setaf 27)"        # BOLD BLUE
+        sbp_dir_color="$sbp_bold$(tput setaf 76)"         # BOLD GREEN
+        sbp_git_status_color="$sbp_bold$(tput setaf 154)" # BOLD YELLOW
+        sbp_git_progress_color="$sbp_bold$(tput setaf 9)" # BOLD RED
     else  # Otherwise, use colors from our set of 8
-        sexy_bash_prompt_user_color="$sexy_bash_prompt_bold$(tput setaf 4)"         # BOLD BLUE
-        sexy_bash_prompt_dir_color="\033[m"                                         # PLAIN WHITE
-        sexy_bash_prompt_git_status_color="$sexy_bash_prompt_bold$(tput setaf 2)"   # BOLD GREEN
-        sexy_bash_prompt_git_progress_color="$sexy_bash_prompt_bold$(tput setaf 1)" # BOLD RED
+        sbp_user_color="$sbp_bold$(tput setaf 4)"         # BOLD BLUE
+        sbp_dir_color="\033[m"                                         # PLAIN WHITE
+        sbp_git_status_color="$sbp_bold$(tput setaf 2)"   # BOLD GREEN
+        sbp_git_progress_color="$sbp_bold$(tput setaf 1)" # BOLD RED
     fi
     
-    sexy_bash_prompt_symbol_color="$sexy_bash_prompt_bold"                          # BOLD
+    sbp_symbol_color="$sbp_bold"                          # BOLD
 
 else
     # Otherwise, use ANSI escape sequences for coloring
@@ -44,34 +44,34 @@ else
     #   echo "\033[1;${i}m"
     # done
 
-    sexy_bash_prompt_reset="\033[m"                                             # WHITE
-    sexy_bash_prompt_user_color="\033[1;34m"                                      # BLUE
-    sexy_bash_prompt_dir_color="\033[1;32m"                                       # GREEN
-    sexy_bash_prompt_git_status_color="\033[1;33m"                                # YELLOW
-    sexy_bash_prompt_git_progress_color="\033[1;31m"                              # RED
-    sexy_bash_prompt_symbol_color=""                                              # NORMAL
+    sbp_reset="\033[m"                                             # WHITE
+    sbp_user_color="\033[1;34m"                                      # BLUE
+    sbp_dir_color="\033[1;32m"                                       # GREEN
+    sbp_git_status_color="\033[1;33m"                                # YELLOW
+    sbp_git_progress_color="\033[1;31m"                              # RED
+    sbp_symbol_color=""                                              # NORMAL
 fi
 
 
 # Set up symbols
-sexy_bash_prompt_synced_symbol=" "
-sexy_bash_prompt_dirty_synced_symbol="* "
-sexy_bash_prompt_unpushed_symbol="△ "
-sexy_bash_prompt_dirty_unpushed_symbol="▲ "
-sexy_bash_prompt_unpulled_symbol="▽ "
-sexy_bash_prompt_dirty_unpulled_symbol="▼ "
-sexy_bash_prompt_unpushed_unpulled_symbol="⬡ "
-sexy_bash_prompt_dirty_unpushed_unpulled_symbol="⬢ "
-sexy_bash_prompt_symbol="> "
+sbp_synced_symbol=" "
+sbp_dirty_synced_symbol="* "
+sbp_unpushed_symbol="△ "
+sbp_dirty_unpushed_symbol="▲ "
+sbp_unpulled_symbol="▽ "
+sbp_dirty_unpulled_symbol="▼ "
+sbp_unpushed_unpulled_symbol="⬡ "
+sbp_dirty_unpushed_unpulled_symbol="⬢ "
+sbp_symbol="> "
 
-function sexy_bash_prompt_get_git_branch() {
+function sbp_get_git_branch() {
     # On branches, this will return the branch name
     # On non-branches, (no branch)
     local ref="$(git symbolic-ref HEAD 2> /dev/null | sed -e 's/refs\/heads\///')"
     [ -n "$ref" ] && echo "$ref" || echo "(no branch)"
 }
 
-function sexy_bash_prompt_get_git_progress() {
+function sbp_get_git_progress() {
     # Detect in-progress actions (e.g. merge, rebase)
     # https://github.com/git/git/blob/v1.9-rc2/wt-status.c#L1199-L1241
     local git_dir="$(git rev-parse --git-dir)"
@@ -89,93 +89,93 @@ function sexy_bash_prompt_get_git_progress() {
     [ -f "$git_dir/REVERT_HEAD" ] && echo " [revert]"
 }
 
-sexy_bash_prompt_is_branch1_behind_branch2 () {
+sbp_is_branch1_behind_branch2 () {
     # Find the first log (if any) that is in branch1 but not branch2
     local first_log="$(git log $1..$2 -1 2> /dev/null)"
     [ -n "$first_log" ]
 }
 
-sexy_bash_prompt_branch_exists () {
+sbp_branch_exists () {
     # List remote branches and exit with 0 or 1
     git branch --remote 2> /dev/null | grep --quiet "$1"
 }
 
-sexy_bash_prompt_has_remote () {
+sbp_has_remote () {
     [ $(git branch --remote 2> /dev/null | wc -l) -ne 0 ]
 }
 
-sexy_bash_prompt_parse_git_ahead () {
+sbp_parse_git_ahead () {
     # Grab the local and remote branch
-    local branch="$(sexy_bash_prompt_get_git_branch)"
+    local branch="$(sbp_get_git_branch)"
     local remote_branch="origin/$branch"
 
     # If the remote branch is behind the local branch
     # or it has not been merged into origin (remote branch doesn't exist)
-    sexy_bash_prompt_has_remote || return
-    if (sexy_bash_prompt_is_branch1_behind_branch2 "$remote_branch" "$branch" ||
-            ! sexy_bash_prompt_branch_exists "$remote_branch"); then
+    sbp_has_remote || return
+    if (sbp_is_branch1_behind_branch2 "$remote_branch" "$branch" ||
+            ! sbp_branch_exists "$remote_branch"); then
         echo 1
     fi
 }
 
-sexy_bash_prompt_parse_git_behind () {
+sbp_parse_git_behind () {
     # If the local branch is behind the remote branch
-    sexy_bash_prompt_is_branch1_behind_branch2 "$(sexy_bash_prompt_get_git_branch)" "origin/$branch" && echo 1
+    sbp_is_branch1_behind_branch2 "$(sbp_get_git_branch)" "origin/$branch" && echo 1
 }
 
-function sexy_bash_prompt_parse_git_dirty() {
+function sbp_parse_git_dirty() {
     # If the git status has *any* changes (e.g. dirty), echo our character
     [ -n "$(git status --porcelain 2> /dev/null)" ] && echo 1
 }
 
-function sexy_bash_prompt_is_on_git() {
+function sbp_is_on_git() {
     git rev-parse 2> /dev/null
 }
 
-function sexy_bash_prompt_get_git_status() {
+function sbp_get_git_status() {
     # Grab the git dirty and git behind
-    local dirty_branch="$(sexy_bash_prompt_parse_git_dirty)"
-    local branch_ahead="$(sexy_bash_prompt_parse_git_ahead)"
-    local branch_behind="$(sexy_bash_prompt_parse_git_behind)"
+    local dirty_branch="$(sbp_parse_git_dirty)"
+    local branch_ahead="$(sbp_parse_git_ahead)"
+    local branch_behind="$(sbp_parse_git_behind)"
 
     # Iterate through all the cases and if it matches, then echo
     if [[ "$dirty_branch" == 1 && "$branch_ahead" == 1 && "$branch_behind" == 1 ]]; then
-        echo "$sexy_bash_prompt_dirty_unpushed_unpulled_symbol"
+        echo "$sbp_dirty_unpushed_unpulled_symbol"
     elif [[ "$branch_ahead" == 1 && "$branch_behind" == 1 ]]; then
-        echo "$sexy_bash_prompt_unpushed_unpulled_symbol"
+        echo "$sbp_unpushed_unpulled_symbol"
     elif [[ "$dirty_branch" == 1 && "$branch_ahead" == 1 ]]; then
-        echo "$sexy_bash_prompt_dirty_unpushed_symbol"
+        echo "$sbp_dirty_unpushed_symbol"
     elif [[ "$branch_ahead" == 1 ]]; then
-        echo "$sexy_bash_prompt_unpushed_symbol"
+        echo "$sbp_unpushed_symbol"
     elif [[ "$dirty_branch" == 1 && "$branch_behind" == 1 ]]; then
-        echo "$sexy_bash_prompt_dirty_unpulled_symbol"
+        echo "$sbp_dirty_unpulled_symbol"
     elif [[ "$branch_behind" == 1 ]]; then
-        echo "$sexy_bash_prompt_unpulled_symbol"
+        echo "$sbp_unpulled_symbol"
     elif [[ "$dirty_branch" == 1 ]]; then
-        echo "$sexy_bash_prompt_dirty_synced_symbol"
+        echo "$sbp_dirty_synced_symbol"
     else # clean
-        echo "$sexy_bash_prompt_synced_symbol"
+        echo "$sbp_synced_symbol"
     fi
 }
 
-sexy_bash_prompt_get_git_info () {
-    local branch="$(sexy_bash_prompt_get_git_branch)"
-    [ -n "$branch" ] && echo "$(sexy_bash_prompt_get_git_status)${branch}"
+sbp_get_git_info () {
+    local branch="$(sbp_get_git_branch)"
+    [ -n "$branch" ] && echo "$(sbp_get_git_status)${branch}"
 }
 
-sexy_bash_prompt_get_retval () {
+sbp_get_retval () {
     local retval=$? 
     [ $retval -ne 0 ] && echo -e "\033[1;31m✖ ${retval}"
 }
 
 # Define the sexy-bash-prompt
-PS1="\$( sexy_bash_prompt_get_retval;\
-  echo -n \"\[$sexy_bash_prompt_dir_color\]\w\"
-  sexy_bash_prompt_is_on_git && \
-  echo -n \"\[$sexy_bash_prompt_git_status_color\]\$(sexy_bash_prompt_get_git_info)\" && \
-  echo -n \"\[$sexy_bash_prompt_git_progress_color\]\$(sexy_bash_prompt_get_git_progress)\"\
-)\[$sexy_bash_prompt_reset\]\
-\[$sexy_bash_prompt_symbol_color\]$sexy_bash_prompt_symbol\[$sexy_bash_prompt_reset\]"
+PS1="\$( sbp_get_retval;\
+  echo -n \"\[$sbp_dir_color\]\w\"
+  sbp_is_on_git && \
+  echo -n \"\[$sbp_git_status_color\]\$(sbp_get_git_info)\" && \
+  echo -n \"\[$sbp_git_progress_color\]\$(sbp_get_git_progress)\"\
+)\[$sbp_reset\]\
+\[$sbp_symbol_color\]$sbp_symbol\[$sbp_reset\]"
 
 
 # TODO
